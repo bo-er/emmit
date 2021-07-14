@@ -20,6 +20,6 @@ go run . pdf ee.info 6_172
 
 ## License Info
 ---
-This softwae contains a package ([unipdf](https://github.com/unidoc/unipdf)) which is a commercial product and requires a license code to operate, 
-Therefor the use of this software package is governed by the end-user license agreement (EULA) available at: https://unidoc.io/eula/
+This software contains a package ([unipdf](https://github.com/unidoc/unipdf)) which is a commercial product and requires a license code to operate, 
+Therefore the use of this software package is governed by the end-user license agreement (EULA) available at: https://unidoc.io/eula/
 To obtain a Trial license code to evaluate the software, please visit https://unidoc.io/
