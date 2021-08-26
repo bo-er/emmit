@@ -59,6 +59,8 @@ var pdfCommand = &cobra.Command{
 
 			utils.Download(path, p)
 		}
+
+		utils.MergePDF(fmt.Sprintf("./%s", courseNumber), fmt.Sprintf("MIT%s.pdf", courseNumber))
 	},
 }
 
@@ -92,5 +94,5 @@ func isYearMatch(y, year string) bool {
 }
 
 func isCourseLectures(link string) bool {
-	return strings.Contains(link, "lecture-slides") && strings.Contains(link, ".pdf")
+	return (strings.Contains(link, "lecture-slides") || strings.Contains(link, "lecture-notes")) && strings.Contains(link, ".pdf")
 }

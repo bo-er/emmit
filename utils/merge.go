@@ -21,15 +21,24 @@ func init() {
 	}
 }
 
+const PDFSuffix = ".pdf"
+
 func MergePDF(path, bookName string) {
 	files, err := os.ReadDir(path)
 	if err != nil {
 		log.Print(err)
 	}
 	input := []string{}
-	for _, f := range files {
-		if strings.HasSuffix(f.Name(),".pdf"){
-			input = append(input, fmt.Sprintf("%s/%s", path, f.Name()))
+	sorter := &NumberSorter{
+		files: files,
+	}
+	err = sorter.sort()
+	if err != nil {
+		panic(err)
+	}
+	for i := 0; i < len(files); i++ {
+		if strings.HasSuffix(files[i].Name(), PDFSuffix) {
+			input = append(input, fmt.Sprintf("%s/%s", path, files[i].Name()))
 		}
 	}
 	if !strings.HasSuffix(bookName, ".pdf") {
