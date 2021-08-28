@@ -81,13 +81,13 @@ var lecturePattern = regexp.MustCompile(`(.*)(lec[0-9]{1,2})(.*.pdf)`)
 func GetPDFName(link string) string {
 	if strings.HasSuffix(link, ".pdf") {
 		index := strings.LastIndex(link, "/")
-		matches := lecturePattern.FindStringSubmatch(link[index+1:])
-		for index, m := range matches {
-			if index != 0 && strings.Contains(m, "lec") {
-				return matches[index] + ".pdf"
+		// matches := lecturePattern.FindStringSubmatch(link[index+1:])
+		// for index, m := range matches {
+		// 	if index != 0 && strings.Contains(m, "lec") {
+		// 		return matches[index] + ".pdf"
 
-			}
-		}
+		// 	}
+		// }
 		return link[index+1:]
 	}
 	return EmptyString

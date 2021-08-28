@@ -1,11 +1,10 @@
 package utils
 
 import (
-	"fmt"
 	"io/fs"
+	"regexp"
 	"sort"
 	"strconv"
-	"strings"
 )
 
 // Sort dictates in what order files are merged
@@ -19,16 +18,22 @@ type NumberSorter struct {
 	files []fs.DirEntry
 }
 
-const Lecprefix = "lec"
+func getNumber(filename string) int {
+	results := numReg.FindAll([]byte(filename), -1)
+	number := results[len(results)-1]
+	if number[0] == byte(0) {
+		number = number[1:]
+	}
+	n, err := strconv.Atoi(string(number))
+	if err != nil {
+		panic(err)
+	}
+	return n
+}
+
+var numReg = regexp.MustCompile("[0-9]+")
 
 func (ns *NumberSorter) sort() error {
-	for i := 0; i < len(ns.files); i++ {
-		number := strings.TrimRight(strings.TrimPrefix(ns.files[i].Name(), Lecprefix), PDFSuffix)
-		_, err := strconv.Atoi(number)
-		if err != nil {
-			return err
-		}
-	}
 	sort.Sort(ns)
 	return nil
 }
@@ -40,10 +45,5 @@ func (n NumberSorter) Swap(i, j int) {
 	n.files[i], n.files[j] = n.files[j], n.files[i]
 }
 func (n NumberSorter) Less(i, j int) bool {
-	numberI := strings.TrimRight(strings.TrimPrefix(n.files[i].Name(), Lecprefix), PDFSuffix)
-	indexI, _ := strconv.Atoi(numberI)
-	numberJ := strings.TrimRight(strings.TrimPrefix(n.files[j].Name(), Lecprefix), PDFSuffix)
-	indexJ, _ := strconv.Atoi(numberJ)
-
-	return indexI < indexJ
+	return getNumber(n.files[i].Name()) < getNumber(n.files[j].Name())
 }
