@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"strings"
+	"time"
 )
 
 const (
@@ -88,7 +89,7 @@ func crawlWithFilterString(w io.Writer, url, filterString string) []string {
 	return returnList
 }
 
-func StartCrawlingFilteringFunc(parentUrls []string, filePath string, filterFuncs ...FilterFunc) {
+func StartCrawlingFilteringFunc(parentUrls []string, filePath string, waitTime time.Duration, filterFuncs ...FilterFunc) {
 	var file io.Writer
 	if _, err := os.Stat(filePath); os.IsNotExist(err) {
 		file, err = os.Create(filePath)

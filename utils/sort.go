@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"fmt"
 	"io/fs"
 	"regexp"
 	"sort"
@@ -20,6 +21,9 @@ type NumberSorter struct {
 
 func getNumber(filename string) int {
 	results := numReg.FindAll([]byte(filename), -1)
+	if len(results) == 0 {
+		panic(fmt.Errorf("failename(%s) contains no number", filename))
+	}
 	number := results[len(results)-1]
 	if number[0] == byte(0) {
 		number = number[1:]

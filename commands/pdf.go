@@ -3,7 +3,9 @@ package commands
 import (
 	"fmt"
 	"log"
-	"strconv"
+	"os"
+	"regexp"
+	"sort"
 	"strings"
 
 	"github.com/bo-er/emmit/links"
@@ -28,16 +30,16 @@ var pdfCommand = &cobra.Command{
 			log.Panic(`Dear Foolio,I need at least 2 parameters, the first one is file where you store all the links downloaded by the crawl command,
 			the second one is the course number`)
 		}
-		var pivot int
 		var courseNumber = args[1]
-		var yearUncertain bool = len(args) < 3 || args[2] == ""
 		var year string
 		var pattern string
+		var reg *regexp.Regexp
 		if len(args) >= 3 {
 			year = args[2]
 		}
 		if len(args) >= 4 {
 			pattern = args[3]
+			reg = regexp.MustCompile(pattern)
 		}
 		courses := make(map[string][]string)
 		lines, err := utils.Readline(args[0])
@@ -51,7 +53,7 @@ var pdfCommand = &cobra.Command{
 				y := links.GetLinkYear(line)
 
 				if pattern != "" { // then using custom patterns
-					if isYearMatch(y, year) && filterByCustomKeyword(line, pattern) {
+					if isYearMatch(y, year) && filterByRegex(line, reg) {
 						courses[y] = append(courses[y], line)
 					}
 				} else {
@@ -63,15 +65,16 @@ var pdfCommand = &cobra.Command{
 			}
 		}
 
-		wanted := getWantedLinks(yearUncertain, pivot, courses)
+		wanted := getWantedLinks(year, courses)
 		for _, p := range wanted {
-			fmt.Println(p)
 			name := links.GetPDFName(p)
-			fmt.Println(name)
 			if name == EmptyString {
 				continue
 			}
-
+			err := os.MkdirAll(fmt.Sprintf("./%s", courseNumber), 0755)
+			if err != nil {
+				panic(fmt.Errorf("failed to call os.MkdirAll. Error: %w", err))
+			}
 			path := fmt.Sprintf("./%s/%s", courseNumber, name)
 			utils.Download(path, p)
 		}
@@ -80,26 +83,23 @@ var pdfCommand = &cobra.Command{
 	},
 }
 
-func getWantedLinks(yearUncertain bool, pivot int, courses map[string][]string) []string {
-	fmt.Println(courses)
-	if yearUncertain && len(courses) == 1 {
-		for _, v := range courses {
-			return v
-		}
-	} else if yearUncertain {
-		for k, _ := range courses {
-			fmt.Println(k)
-			i, err := strconv.Atoi(k)
-			if err != nil {
-				log.Panic(err)
-			}
-			if pivot == 0 || i > pivot {
-				pivot = i
-			}
-		}
+func getCorseMapKeys(m map[string][]string) []string {
+	var keys []string
+	for k, _ := range m {
+		keys = append(keys, k)
 	}
-	if v, ok := courses[strconv.Itoa(pivot)]; ok {
-		return v
+	return keys
+}
+
+func getWantedLinks(year string, courses map[string][]string) []string {
+	if year != "" {
+		if links, exists := courses[year]; exists {
+			return links
+		}
+	} else {
+		keys := getCorseMapKeys(courses)
+		sort.Strings(keys)
+		return courses[keys[len(keys)-1]]
 	}
 	return nil
 }
@@ -111,12 +111,27 @@ func isYearMatch(y, year string) bool {
 	return year == y //year is not empty
 }
 
+// isCourseLectures filters lecture link
 func isCourseLectures(link string) bool {
 	return (strings.Contains(link, "lecture-slides") ||
 		strings.Contains(link, "lecture-notes")) ||
+		strings.Contains(link, "lecture-videos") ||
 		strings.Contains(link, ".pdf")
 }
 
-func filterByCustomKeyword(link, keyword string) bool {
-	return strings.Contains(link, keyword) && strings.Contains(link, ".pdf")
+// filterByRegex filters a link whose suffix matches the regex expression
+func filterByRegex(link string, keyword *regexp.Regexp) bool {
+	// filter non pdf link
+	if !strings.HasSuffix(link, ".pdf") {
+		return false
+	}
+	if keyword != nil {
+		match := keyword.FindString(link)
+		if match == "" {
+			return false
+		}
+		return strings.HasSuffix(link, match)
+	}
+
+	return true
 }

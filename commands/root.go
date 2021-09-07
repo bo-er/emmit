@@ -18,6 +18,7 @@ func init() {
 	RootCmd.PersistentFlags().StringVarP(&School, "school", "s", "electrical-engineering-and-computer-science",
 		"this is the school you're interested in, default value is EE school")
 	RootCmd.AddCommand(pdfCommand)
+	RootCmd.AddCommand(testCmd)
 }
 
 var RootCmd = &cobra.Command{

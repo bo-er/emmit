@@ -18,6 +18,12 @@ go run . pdf ee.info 6_172
 
 ```
 
+### Note
+
+Since each course may have different lecture notes links. Thus you can use regex expression to filter specific link suffixes.
+For example, use `go run . pdf ee.info 6_006 2011 "lec[0-9]+.pdf"` you can Download MIT course 6.006's lecture materials since they have `lec01.pdf` style suffixs.
+
+
 ## License Info
 ---
 This software contains a package ([unipdf](https://github.com/unidoc/unipdf)) which is a commercial product and requires a license code to operate, 
